@@ -1,0 +1,143 @@
+---
+title: "Assignment1-2017555012"
+author: "Sümeyra Çam"
+date: "21 01 2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(knitr)
+library(dplyr)
+library(tidyverse)
+library(starwarsdb)
+```
+
+## Q1: How many characters do have at least one starship?
+
+```{r include=FALSE}
+
+sw <- starwars
+sw
+
+have_starship <- sw %>%
+  group_by(name) %>%
+  summarize(num_starships = lengths(starships ),.groups = 'drop' ) %>%
+  arrange(desc(num_starships)) %>%
+  filter(num_starships >= 1) 
+```
+
+```{r echo=FALSE}
+kable(count(have_starship))
+kable(have_starship)
+```
+
+
+
+## Q2: Get the frequencies of the eye color of the characters
+
+```{r include=FALSE}
+eye_frequency <- sw %>%
+  group_by(eye_color) %>%
+  summarize(eye_color,.groups = 'drop' ) %>%
+  count(eye_color) %>%
+  arrange(desc(n))
+```
+
+## Ranked data:
+
+```{r echo=FALSE}
+kable(eye_frequency)
+```
+
+## Q3: According to the data available, what are the mean (average) age values across each species? Find the 3 oldest species.
+
+```{r echo=FALSE}
+mean_age<- sw %>%
+  filter(!is.na(birth_year)) %>%
+  filter(!is.na(species)) %>%
+  group_by(species) %>%
+  summarize(
+    mean_birth=mean(birth_year)
+  )
+(mean_age)
+
+species<-arrange(mean_age,desc(mean_birth))
+species[c(1,2,3),] 
+
+
+```
+
+
+## Q4: A new data set by adding a new observation to this data
+
+```{r echo=FALSE}
+starwars_new <- sw %>% add_row(name = 'Sümeyra Çam',height = 164.0, mass = 80 ,hair_color = 'brown',skin_color = 'warm ivory',eye_color = 'brown',birth_year = 23,sex = 'female',gender = 'feminine', homeworld = 'Stewjon',species = 'Human',
+                                  films = list('The Clone Wars'),vehicles = list('T-47 Airspeeder'),starships = list('Luxury 3000'))
+
+
+kable(starwars_new%>%tail(1))
+
+```
+
+## Q5: Calculate the body mass index (BMI)
+
+```{r echo=FALSE}
+starwars_new<-starwars_new %>%
+  mutate(starwars_new,bmi=mass/((height/100)^2))
+
+starwars_new<-starwars_new %>%
+  mutate(starwars_new,bmi_result=if_else(bmi < 18.5,"underweight",
+                                        if_else((18.5 < bmi) & (bmi < 24.99),"healthy",
+                                                if_else((25.0 < bmi) & (bmi < 29.99),"overweight",
+                                                        "obese"))))
+
+kable(starwars_new%>%head(1))
+
+```
+
+## Q6: Plot the distribution of ages less than 100 by BMI groups
+
+```{r echo=FALSE}
+starwars_new$birth_year<-as.integer(starwars_new$birth_year)
+
+hundred_below<- starwars_new%>%
+  na.omit(select(birth_year,bmi,bmi_result))%>%
+  filter(birth_year<100.0)
+
+```
+
+
+```{r echo=FALSE}
+ggplot(data = hundred_below, mapping = aes(x=bmi_result,y=birth_year))+
+  geom_boxplot( color="blue", fill="blue",
+                alpha=0.2,
+                
+                notch=FALSE,
+                notchwidth = 0.8,
+                
+                outlier.colour="red",
+                outlier.fill="red",
+                outlier.size=3
+  )
+
+```
+
+## Q7: By plotting a graph, show the relationship between age and BMI values.Re-plot the same graph after filtering the data as both age and BMI less than 100.
+
+```{r echo=FALSE}
+ggplot(data=starwars_new)+
+  geom_point(mapping=aes(x=birth_year,y=bmi))+
+  geom_smooth(mapping=aes(x=birth_year,y=bmi))
+ggplot(data=hundred_below,mapping=aes(x=birth_year,y=bmi))+
+  geom_point()+
+  geom_smooth(data=filter(hundred_below,birth_year<100 & bmi<100))
+
+
+
+```
+
+

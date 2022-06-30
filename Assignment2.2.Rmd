@@ -1,0 +1,73 @@
+---
+title: "Assignment2.2-2017555012"
+author: "Sümeyra Çam"
+date: "21 01 2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+set.seed(2017555012)
+library(stringr)
+library(tidyverse)
+library(dplyr)
+library(knitr)
+
+stringr::sentences
+
+new_data <- sample(stringr::sentences,100)
+new_data
+
+vectors <- unlist(strsplit(new_data," ",boundary("word")))
+vectors
+
+new_words <-unique(vectors)
+new_words
+```
+
+```{r echo=FALSE}
+kable(new_words)
+```
+
+## Q1: Find words which are starting with "a" and ending with "e".
+
+```{r include=FALSE}
+data <- tibble(
+  word = new_words,
+  #i = seq_along(word)
+)
+data%>% filter(str_detect(new_words, "^a[a-z]*e$"))
+```
+
+
+
+## Q2: Calculate the number of words which have more than 3 vowels.
+
+```{r echo=FALSE}
+data<-data %>%
+
+  mutate(
+    vowels = str_count(new_words,"[aeiou]"),
+    consonants = str_count(new_words,"(?i)([b-z&&[^eiou]])"),
+    length = vowels + consonants
+  )
+
+more_than_three <- filter(data, vowels>3)
+count(more_than_three)
+```
+
+## Q3: List the five longest word in your data
+
+```{r echo=FALSE}
+head(arrange(data,desc(length)),5)
+```
+
+
+## Q4: Try to find word(s) which contain any of these words: age, any, day, exp, her, pro, the.
+
+```{r echo=FALSE}
+data%>%filter(str_detect(new_words, "age|any|day|exp|her|pro|the"))
+```

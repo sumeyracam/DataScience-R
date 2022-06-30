@@ -1,0 +1,122 @@
+---
+title: "Assignment3-2017555012"
+author: "Sümeyra Çam"
+date: "21 01 2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+set.seed(2017555012)
+library(tidyverse)
+library(stringr)
+library(knitr)
+```
+
+## Q1: Write a function that finds a prime number(s) given a set of numbers. Your function also provides prime factors of non-prime numbers.
+
+```{r echo=FALSE}
+set_of_num<-sample(c(1:500), size=5, replace=TRUE)
+set_of_num
+
+is_prime <- function(numbers) {
+  p_num<-c()
+  n_num<-c()
+  for(x in numbers){
+    bool=TRUE
+    k = 2
+    while(k < (x/2)){
+      if(x%%k == 0)
+        bool=FALSE
+      k <- k + 1
+    }
+    if(x == 2) bool=TRUE
+    if(bool == TRUE){
+      p_num<-c(p_num, x)
+    }
+    else if(bool == FALSE){
+      n_num <- c(n_num, x)
+    }
+  }
+  c = 1
+  print("Non-Prime Numbers:")
+  while(c <= length(n_num)){
+    numvec <- n_num[c]
+    for(num in numvec){
+      if(num>2){
+        numvec <- c()
+        while(num %% 2 == 0){
+          numvec <- c(numvec, 2)
+          num <- num/2
+        }
+        i = 3
+        while(num!=1){
+          while(num%%i == 0){
+            numvec <- c(numvec, i)
+            num<-num/i
+          }
+          i<-i+2
+        }
+      }
+      print(c(n_num[c],numvec))
+      c <- c + 1
+    }
+  }
+  print(list(c("Prime numbers:" ,p_num)))
+}
+```
+
+```{r echo=FALSE}
+kable(is_prime(set_of_num))
+```
+
+## Q2: Write a function that finds the letter numbers of all words in a given text and sorts the text according to those numbers from words with few letters to words with many letters. Sort the words containing the same number of letters alphabetically.
+
+```{r echo=FALSE}
+new_sentences <- sample(sentences, 6,)
+
+df <- tibble(
+  word = new_sentences,
+  #i = seq_along(word)
+)
+head(df)
+
+q2<-function(df){
+
+  a <- df %>% select(word) %>% unlist(use.names = FALSE)
+  string1 <- str_c(a,collapse=" ")
+  string2 <- str_to_lower(string1, locale = "en")
+  string3 <- strsplit(string2, " ")[[1]]
+  string4 <- str_replace_all(strsplit(string2, " ")[[1]], "[\\.\\,\\;\\:\\?\\!]$", "")
+
+  tibble_of_words <- tibble(
+    words = factor(),
+    frequency = numeric()
+  )
+ 
+  for(token in string4){
+    flag <- sum(str_detect(string4,regex(token)))
+    tibble_of_words <- tibble_of_words %>% add_row(words = token, frequency = flag)
+    
+  }
+  tibble_of_words<-tibble_of_words %>%
+    mutate(
+      vowels = str_count(tibble_of_words$words,"[aeiou]"),
+      consonants = str_count(tibble_of_words$words,"(?i)([b-z&&[^eiou]])"),
+      length = vowels + consonants
+    )
+  
+  tibble_of_words$words<-as.character(tibble_of_words$words)
+  tibble_of_words <- arrange(tibble_of_words,length)
+  tibble_of_words <- tibble_of_words[with(tibble_of_words, order(length,words)), ]
+  
+  return (str_c(tibble_of_words$words, collapse = " "))
+}
+```
+
+```{r echo=FALSE}
+kable(q2(df))
+```

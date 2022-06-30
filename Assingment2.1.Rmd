@@ -1,0 +1,88 @@
+---
+title: "Assignment2.1-2017555012"
+author: "Sümeyra Çam"
+date: "21 01 2022"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include=FALSE}
+library(tidyverse)
+library(dplyr)
+library(ggplot2)
+set.seed(2017555012)
+library(knitr)
+
+
+data<-read_csv("C:/Users/SÜMEYRA/Desktop/data/covid-data-2020.csv")
+
+covid_data <- sample(1:nrow(data), 1000)
+covid_data <- data[covid_data, ]
+
+
+```
+
+```{r echo=FALSE}
+kable(covid_data %>% head(10))
+```
+
+## Q1: Calculate the five-number summary statistics of covid-19 daily new cases for each country within each month.
+
+```{r echo=FALSE}
+five_numbers<- covid_data %>%
+  group_by(location,month) %>%
+  summarize(min=min(new_cases),
+            Q1=quantile(new_cases,probs=0.25,na.rm=TRUE),
+            Q2=quantile(new_cases,0.50,na.rm=TRUE),
+            Q3=quantile(new_cases,probs=0.75,na.rm=TRUE),
+            max=max(new_cases))
+```
+
+```{r echo=FALSE}
+kable(five_numbers %>% head(10))
+```
+
+
+## Q2: Find the highest daily cases and deaths separately for each country.
+
+```{r echo=FALSE}
+max_cases <- group_by(covid_data, location)
+summarise(max_cases, 
+          max_case = max(new_cases, na.rm=TRUE),
+          max_death = max(new_deaths, na.rm=TRUE),.groups = 'drop')
+```
+
+
+## Q3: Identify the month in which the mean daily cases is the highest for each country.
+
+```{r echo=FALSE}
+highest_month <- covid_data %>%
+    group_by(location,month) %>%
+    summarize(Mean_cases = mean(new_cases),.groups = 'drop') %>%
+    arrange(desc(Mean_cases)) 
+```
+
+```{r echo=FALSE}
+kable(highest_month %>% head(10))
+```
+
+## Q4: Select 3 country and plot the distribution of daily cases by month.Use location as clusters (i.e., color=location) to show the difference between countries.
+
+```{r include=FALSE}
+selected_locations<-covid_data%>%
+  group_by(month)%>%
+  filter(location ==c("Russia","France","Bulgaria") )
+
+x<-ggplot(selected_locations, aes(x=month, y= new_cases, color=location)) +  geom_point()
+
+
+```
+
+```{r final, echo=FALSE}
+plot(x)
+```
+
+```
